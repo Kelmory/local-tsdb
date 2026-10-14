@@ -221,8 +221,6 @@ code was written and verified with a local Bonsai Qwen model**:
 
 The value here is the *packaging* — a small, readable, single-file, embedded
 time-series engine that is wire-compatible with InfluxDB — not novel research.
-If you need scale, use the real InfluxDB / VictoriaMetrics / TimescaleDB; if
-you need a single file you can drop on a disk, this is for you.
 
 ## Limitations
 

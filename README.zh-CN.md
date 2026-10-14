@@ -208,8 +208,7 @@ GPU 监控以控制台脚本形式安装：`local-tsdb-gpu --db gpu.ltdb`。
 - InfluxDB line protocol 与 InfluxQL 作为对外接口。
 
 这里真正的价值在于**打包方式**——一个小巧、可读、单文件、嵌入式、且与 InfluxDB 接口兼容的
-时序引擎——而不是新的研究成果。如果你需要规模化，请用真正的 InfluxDB / VictoriaMetrics /
-TimescaleDB；如果你需要一个能随手丢在磁盘上的单文件，这个项目就是为你准备的。
+时序引擎——而不是新的研究成果。
 
 ## 已知限制
 
