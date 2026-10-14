@@ -1,0 +1,39 @@
+$ python demo/demo.py
+
+==============================================================
+1. Write points (Python API + line protocol)
+==============================================================
+wrote 30 points into demo.ltdb
+file size: 24576 bytes
+measurements: cpu, load, mem
+
+==============================================================
+2. Read back (select / aggregate)
+==============================================================
+cpu/host=a rows: 10 | first usage: 0.0
+mean cpu usage over all hosts: 0.200
+
+==============================================================
+3. InfluxQL-subset queries (db.sql)
+==============================================================
+
+SELECT * FROM cpu WHERE host='a' LIMIT 3   -> CSV:
+name,host,time,usage
+cpu,a,1700000000000000000,0.0
+cpu,a,1700000000000000001,0.1
+cpu,a,1700000000000000002,0.2
+
+
+SELECT mean(usage) FROM cpu GROUP BY time(100):
+  bucket 1700000000000000000 -> 0.2
+
+SHOW MEASUREMENTS -> ['cpu', 'load', 'mem']
+
+==============================================================
+4. Standard TSDB HTTP interface (InfluxDB-compatible)
+==============================================================
+GET  /ping   -> 204
+POST /write  -> 204 (ingested net/iface=eth0)
+GET  /query  -> 200 | columns=['count'] rows=[{'count': 1}]
+
+done. (temp dir removed)

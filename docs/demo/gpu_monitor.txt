@@ -1,0 +1,16 @@
+ GPU Monitor   db=gpu.ltdb  server=127.0.0.1:8086
+driver 617.14  CUDA 13.4  tick #42  00:01:19
+
+GPU0  NVIDIA GeForce RTX 5060 Ti
+  mem |█░░░░░░░░░░░░░░░░░░░░░░░░░| 5.1%  838 / 16,311 MiB
+  mem  history ▃█▆▁▁  min 838 | now 838 | max 918 MiB
+  util history ▃▂▁▅█  min 2% | now 8% | max 8%
+  temp 51°C   power 13.0 W
+  GPU processes:
+         PID  KIND   NAME                             MEM(MiB)
+        1024  cuda   python.exe                           842
+        1180  cuda   train.py                             285
+        2048  gfx    chrome.exe                            76
+        3312  cuda   jupyter-lab.exe                       35
+        4096  cuda   ollama.exe                            12
+Ctrl+C to quit

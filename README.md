@@ -39,6 +39,18 @@ can talk to it unchanged.
 Good fit for: local metrics collection, edge/IoT buffering, dev & test
 environments, desktop telemetry, and offline analysis.
 
+## Screenshots
+
+The GPU-monitor demo sampling real GPU metrics into `ltsdb` and rendering a
+dashboard rebuilt from `/query` (real capture, with host paths and process
+names sanitised):
+
+![GPU monitor dashboard](docs/images/gpu_monitor.png)
+
+The Go engine's CLI — ingest, query, benchmark:
+
+![ltsdb CLI](docs/images/go_cli.png)
+
 ## What's in the repo
 
 | Path | Language | Role |
@@ -47,6 +59,7 @@ environments, desktop telemetry, and offline analysis.
 | [`tsdb/`](tsdb) | Python 3, stdlib only | **Reference implementation** — same architecture, easy to read and audit |
 | [`gpu_monitor/`](gpu_monitor) | Python + `pynvml` | **Real-world demo** — samples GPUs → `/write` → live ANSI dashboard |
 | [`DESIGN.md`](DESIGN.md) | — | Architecture & on-disk format notes (reference engine) |
+| [`docs/`](docs) | — | README screenshots and the terminal-render helper |
 
 Both engines share the same design and the same on-disk ideas; the Go one is
 what you run, the Python one is the readable specification you compare against.
@@ -128,6 +141,8 @@ with TimeSeriesDB("cpu.ltdb") as db:
     rows = db.select(measurement="cpu", tag_filters={"host": "a"})
 ```
 
+![Python reference engine demo](docs/images/python_demo.png)
+
 ### 3. GPU monitor demo (Windows)
 
 Reuses or spawns `ltsdb serve` and streams GPU utilisation / memory /
@@ -141,6 +156,46 @@ python -m gpu_monitor --db gpu.ltdb --interval 1
 
 Per-process GPU memory on Windows (WDDM) is read from a persistent PowerShell
 `Get-Counter` child, since NVML does not expose it on current drivers.
+
+## Install as a package
+
+### Go library / CLI
+
+```sh
+go get github.com/Kelmory/local-tsdb        # as a library
+go install github.com/Kelmory/local-tsdb/cmd/ltsdb@latest   # as the CLI
+```
+
+```go
+import ltsdb "github.com/Kelmory/local-tsdb"
+
+db, _ := ltsdb.Open("metrics.ltsdb")
+defer db.Close()
+
+db.WritePoints([]ltsdb.Point{{
+    Measurement: "cpu",
+    Tags:        map[string]string{"host": "a"},
+    Fields:      map[string]any{"usage": 0.64},
+}})
+db.Commit()
+
+rows, _ := db.Select(context.Background(), ltsdb.SelectQuery{Measurement: "cpu"})
+rs, _ := ltsdb.Exec(db, "SELECT mean(usage) FROM cpu")   // InfluxQL -> ResultSet
+```
+
+### Python package
+
+```sh
+pip install .                   # from a clone
+pip install local-tsdb          # once published to PyPI
+pip install "local-tsdb[gpu]"   # also pulls pynvml for the GPU monitor demo
+```
+
+```python
+from tsdb import TimeSeriesDB, Point
+```
+
+The GPU monitor is installed as a console script: `local-tsdb-gpu --db gpu.ltdb`.
 
 ## Benchmarks
 

@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-tsdb"
+version = "1.0.0"
+description = "A single-file, zero-dependency time-series database with an InfluxDB-compatible API"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Kelmory" }]
+keywords = ["time-series", "tsdb", "influxdb", "embedded", "database", "metrics"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Database",
+    "Topic :: System :: Monitoring",
+]
+dependencies = []
+
+[project.optional-dependencies]
+gpu = ["pynvml>=11.5.0"]
+
+[project.scripts]
+local-tsdb-gpu = "gpu_monitor.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/Kelmory/local-tsdb"
+Repository = "https://github.com/Kelmory/local-tsdb"
+Issues = "https://github.com/Kelmory/local-tsdb/issues"
+
+[tool.setuptools]
+packages = ["tsdb", "gpu_monitor"]

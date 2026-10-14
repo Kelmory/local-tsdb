@@ -58,6 +58,7 @@ func main() {
 		os.Exit(exitUsage)
 	}
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "ltsdb: %v\n", err)
 		os.Exit(exitFromError(err))
 	}
 	os.Exit(exitOK)

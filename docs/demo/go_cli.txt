@@ -1,0 +1,16 @@
+$ ./ltsdb import --db demo.ltdb --file cpu.lp
+imported 360 points
+
+$ ./ltsdb query --db demo.ltdb "SELECT mean(usage) FROM cpu WHERE host='a'"
+mean_usage
+0.5000833333333332
+
+$ ./ltsdb query --db demo.ltdb --json "SHOW MEASUREMENTS"
+{"columns": ["name"], "rows": [{"name": "cpu"}]}
+
+$ ./ltsdb bench --db bench.ltsdb
+[bench] wrote 100000 points in 0.182s -> 550652 points/s
+[bench] file size: 925696 bytes (9.26 bytes/point)
+[bench] full scan of 100000 rows: 0.057s
+[bench] pruned range (8 hosts x 1001 rows): 0.0097s for 8008 rows
+[bench] mean over 100000 points: 0.019s (mean=0.495000)
