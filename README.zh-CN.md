@@ -56,9 +56,11 @@ line protocol 和一部分 InfluxQL，现有工具与客户端无需改动即可
 
 ## 界面截图
 
-下面这张 CPU 监控看板基于**真实数据**：一个临时 demo
-（[`docs/demo/cpu_dashboard.py`](docs/demo/cpu_dashboard.py)）采集 CPU 负载，
-经 `/write` 写入 `ltsdb`，再用 `/query` 读回后渲染成这个页面：
+一个可交互的 CPU 监控看板，数据来自**真实采集**
+（[`docs/demo/cpu_dashboard.py`](docs/demo/cpu_dashboard.py)）。demo 先经 `/write`
+把 CPU 负载写入 `ltsdb`，随后托管一个页面：**时间范围按钮会发起真实的、带时间条件的
+InfluxQL 查询**——`SELECT * FROM cpu WHERE time > now() - 1m`——经 `GET /query`
+执行，并在每次点击后显示实际语句、返回行数与耗时：
 
 ![CPU 监控看板](docs/images/cpu_dashboard.png)
 

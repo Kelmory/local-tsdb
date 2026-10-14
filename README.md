@@ -68,16 +68,18 @@ environments, desktop telemetry, and offline analysis.
 
 ## Screenshots
 
-A CPU-monitor dashboard built from **real data**: a temporary demo
-([`docs/demo/cpu_dashboard.py`](docs/demo/cpu_dashboard.py)) samples CPU load,
-stores it in `ltsdb` over `/write`, reads it back over `/query`, and renders
-this page:
+An interactive CPU-monitor dashboard built from **real data**
+([`docs/demo/cpu_dashboard.py`](docs/demo/cpu_dashboard.py)). The demo samples
+CPU load into `ltsdb` over `/write`, then serves a page whose **time-range
+buttons run real, time-filtered InfluxQL** — `SELECT * FROM cpu WHERE time >
+now() - 1m` — against `GET /query`, showing the statement, row count and latency
+on every click:
 
 ![CPU monitor dashboard](docs/images/cpu_dashboard.png)
 
 Pass `--backfill SECONDS` to write a backdated history in a single pass instead
 of sampling live — the engine accepts arbitrary past nanosecond timestamps, so
-historical (and out-of-order) data can be loaded without waiting.
+historical (and out-of-order) data loads without waiting.
 
 The GPU-monitor demo sampling real GPU metrics into `ltsdb` and rendering a
 dashboard rebuilt from `/query` (real capture, with host paths and process
