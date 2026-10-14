@@ -1,0 +1,29 @@
+# --- Database files / runtime data ---
+*.ltdb
+*.ltsdb
+*.wal
+
+# --- Compiled binaries & build output ---
+*.exe
+*.test
+*.out
+/go/ltsdb
+/go/ltsdb.exe
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Internal / personal (not part of the open-source repo) ---
+.trae/
+/go/tools/probe/

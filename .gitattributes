@@ -1,0 +1,13 @@
+# Normalise line endings so the repo is consistent across platforms.
+* text=auto eol=lf
+
+*.go    text eol=lf
+*.py    text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.mod   text eol=lf
+
+# Binary artefacts (also gitignored, declared here for safety)
+*.exe   binary
+*.ltdb  binary
+*.ltsdb binary

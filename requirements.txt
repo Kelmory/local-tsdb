@@ -1,0 +1,3 @@
+# Runtime dependency for the gpu_monitor demo only.
+# The tsdb/ reference engine and its test suite use the Python standard library only.
+pynvml>=11.5.0
