@@ -75,6 +75,10 @@ this page:
 
 ![CPU monitor dashboard](docs/images/cpu_dashboard.png)
 
+Pass `--backfill SECONDS` to write a backdated history in a single pass instead
+of sampling live — the engine accepts arbitrary past nanosecond timestamps, so
+historical (and out-of-order) data can be loaded without waiting.
+
 The GPU-monitor demo sampling real GPU metrics into `ltsdb` and rendering a
 dashboard rebuilt from `/query` (real capture, with host paths and process
 names sanitised):

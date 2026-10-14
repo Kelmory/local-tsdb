@@ -62,6 +62,9 @@ line protocol 和一部分 InfluxQL，现有工具与客户端无需改动即可
 
 ![CPU 监控看板](docs/images/cpu_dashboard.png)
 
+加 `--backfill SECONDS` 可一次性写入一段回溯的历史时间戳，而不必等待实时采样——
+引擎接受任意（过去的）纳秒时间戳，因此历史数据、乃至乱序写入都能直接加载。
+
 GPU 监控 demo 把真实 GPU 指标写入 `ltsdb`，并根据 `/query` 结果重建看板
 （真实抓取，主机路径与进程名已脱敏）：
 

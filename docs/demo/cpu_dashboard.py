@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import subprocess
 import sys
@@ -65,6 +66,12 @@ def burn_after(delay: float, duration: float) -> None:
     """Sleep, then generate background load (used to shape the demo curve)."""
     time.sleep(delay)
     burn(duration)
+
+
+def synth(i: int) -> int:
+    """Deterministic, plausible-looking load percentage (for --backfill)."""
+    v = 18 + 22 * abs(math.sin(i / 7.0)) + 14 * abs(math.sin(i / 2.3))
+    return max(0, min(100, int(v)))
 
 
 # ------------------------------------------------------------ ltsdb server --- #
@@ -184,6 +191,10 @@ def render_html(points: list[int], meta: dict) -> str:
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--samples", type=int, default=30)
+    ap.add_argument("--backfill", type=int, default=0, metavar="SECONDS",
+                    help="write SECONDS of (synthetic) history ending at now in "
+                         "a single pass, instead of sampling live -- shows that "
+                         "timestamps may be backdated")
     ap.add_argument("--addr", default="127.0.0.1:18087")
     ap.add_argument("--out", default=os.path.join(ROOT, "docs", "demo",
                                                   "cpu_dashboard.html"))
@@ -198,26 +209,36 @@ def main(argv=None) -> None:
             os.remove(db + suffix)
 
     server = start_server(args.addr, db)
-    # Idle baseline, then a burst of synthetic load in the middle, then cooldown.
-    threading.Thread(target=burn_after,
-                     args=(args.samples * 0.2, args.samples * 0.5),
-                     daemon=True).start()
-
-    base = time.time_ns()
-    values = []
-    for i in range(args.samples):
-        v = cpu_load()
-        values.append(v)
-        ts = base + i * 1_000_000_000
-        write_lines(args.addr, "cpu,host=local usage={}i {}\n".format(v, ts))
-        time.sleep(max(0.0, 1.0 - (time.time_ns() - ts) / 1e9))
+    if args.backfill:
+        # Backdated ingestion: one sample per second covering the last
+        # ``--backfill`` seconds, all written in a single pass -- the engine
+        # accepts arbitrary (past) nanosecond timestamps, so no waiting is
+        # needed and the chart is full immediately.
+        end = time.time_ns()
+        for i in range(args.backfill):
+            ts = end - (args.backfill - 1 - i) * 1_000_000_000
+            write_lines(args.addr,
+                        "cpu,host=local usage={}i {}\n".format(synth(i), ts))
+        tag = "backfilled {}s (synthetic history)".format(args.backfill)
+    else:
+        # Idle baseline, then a burst of synthetic load in the middle, then cooldown.
+        threading.Thread(target=burn_after,
+                         args=(args.samples * 0.2, args.samples * 0.5),
+                         daemon=True).start()
+        base = time.time_ns()
+        for i in range(args.samples):
+            ts = base + i * 1_000_000_000
+            write_lines(args.addr,
+                        "cpu,host=local usage={}i {}\n".format(cpu_load(), ts))
+            time.sleep(max(0.0, 1.0 - (time.time_ns() - ts) / 1e9))
+        tag = "live sampling"
 
     rows = query(args.addr, "SELECT * FROM cpu")
     points = [int(r["usage"]) for r in sorted(rows, key=lambda r: int(r["time"]))]
     mean = sum(points) / len(points) if points else 0
     html = render_html(points, {
-        "subtitle": "host=local  -  {} samples  -  mean {:.1f}%  -  "
-                    "{}".format(len(points), mean,
+        "subtitle": "host=local  -  {} samples  -  mean {:.1f}%  -  {}  -  "
+                    "{}".format(len(points), mean, tag,
                                 time.strftime("%Y-%m-%d %H:%M"))})
     with open(args.out, "w", encoding="utf-8") as fh:
         fh.write(html)
