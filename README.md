@@ -95,7 +95,7 @@ The Go engine's CLI — ingest, query, benchmark:
 
 | Path | Language | Role |
 |---|---|---|
-| [`go/`](go) | Go 1.21, stdlib only | **Production engine** — the `ltsdb` binary: engine, InfluxQL, HTTP API, CLI |
+| [`cmd/`](cmd), [`internal/`](internal), [`ltsdb.go`](ltsdb.go) | Go 1.21, stdlib only | **Production engine** — the `ltsdb` binary: engine, InfluxQL, HTTP API, CLI (this is the Go module root, so `go get` works) |
 | [`tsdb/`](tsdb) | Python 3, stdlib only | **Reference implementation** — same architecture, easy to read and audit |
 | [`gpu_monitor/`](gpu_monitor) | Python + `pynvml` | **Real-world demo** — samples GPUs → `/write` → live ANSI dashboard |
 | [`DESIGN.md`](DESIGN.md) | — | Architecture & on-disk format notes (reference engine) |
@@ -129,7 +129,6 @@ what you run, the Python one is the readable specification you compare against.
 ### 1. Go engine (the one you run)
 
 ```sh
-cd go
 go build -o ltsdb ./cmd/ltsdb          # add .exe on Windows
 
 # start an InfluxDB-compatible HTTP server

@@ -7,8 +7,9 @@
 *.exe
 *.test
 *.out
-/go/ltsdb
-/go/ltsdb.exe
+/ltsdb
+/ltsdb.exe
+build/
 
 # --- Python ---
 __pycache__/
@@ -26,4 +27,4 @@ Thumbs.db
 
 # --- Internal / personal (not part of the open-source repo) ---
 .trae/
-/go/tools/probe/
+/tools/probe/

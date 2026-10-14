@@ -80,7 +80,7 @@ Go 引擎的命令行——写入、查询、压测：
 
 | 路径 | 语言 | 作用 |
 |---|---|---|
-| [`go/`](go) | Go 1.21，仅标准库 | **生产引擎** —— `ltsdb` 二进制：引擎、InfluxQL、HTTP API、CLI |
+| [`cmd/`](cmd)、[`internal/`](internal)、[`ltsdb.go`](ltsdb.go) | Go 1.21，仅标准库 | **生产引擎** —— `ltsdb` 二进制：引擎、InfluxQL、HTTP API、CLI（这里是 Go 模块根，故 `go get` 可用） |
 | [`tsdb/`](tsdb) | Python 3，仅标准库 | **参考实现** —— 同样的架构，便于阅读与审计 |
 | [`gpu_monitor/`](gpu_monitor) | Python + `pynvml` | **真实场景 demo** —— 采集 GPU → `/write` → 实时 ANSI 看板 |
 | [`DESIGN.md`](DESIGN.md) | — | 架构与磁盘格式说明（参考实现） |
@@ -109,7 +109,6 @@ Go 引擎的命令行——写入、查询、压测：
 ### 1. Go 引擎（实际使用的那个）
 
 ```sh
-cd go
 go build -o ltsdb ./cmd/ltsdb          # Windows 上加 .exe
 
 # 启动兼容 InfluxDB 的 HTTP 服务

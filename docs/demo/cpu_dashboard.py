@@ -34,7 +34,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-EXE = os.path.join(ROOT, "go", "ltsdb.exe")
+EXE = os.path.join(ROOT, "ltsdb.exe")
 
 
 # ---------------------------------------------------------------- sampling --- #
@@ -328,7 +328,7 @@ def main(argv=None) -> None:
     args = ap.parse_args(argv)
 
     if not os.path.exists(EXE):
-        sys.exit("build the engine first: cd go && go build -o ltsdb.exe ./cmd/ltsdb")
+        sys.exit("build the engine first: go build -o ltsdb.exe ./cmd/ltsdb")
 
     db = os.path.join(ROOT, "docs", "demo", "cpu_demo.ltsdb")
     for suffix in ("", ".wal"):

@@ -49,8 +49,7 @@ def ensure_server(addr: str, db_path: str, exe: str):
     if not os.path.exists(exe):
         sys.exit("server binary not found: {}\n"
                  "build it first:  cd {} && go build -o ltsdb.exe ./cmd/ltsdb\n"
-                 "or point --exe at an existing build".format(
-                     exe, os.path.join(_PROJECT_ROOT, "go")))
+                 "or point --exe at an existing build".format(exe, _PROJECT_ROOT))
     proc = subprocess.Popen(
         [exe, "serve", "--db", db_path, "--addr", addr],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -92,7 +91,7 @@ def main(argv=None) -> None:
     parser.add_argument("--history", type=int, default=60,
                         help="samples kept for sparklines (default: 60)")
     parser.add_argument("--exe",
-                        default=os.path.join(_PROJECT_ROOT, "go", "ltsdb.exe"),
+                        default=os.path.join(_PROJECT_ROOT, "ltsdb.exe"),
                         help="path to the ltsdb server binary")
     parser.add_argument("--keep-server", action="store_true",
                         help="leave the spawned server running on exit")
