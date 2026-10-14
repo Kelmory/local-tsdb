@@ -40,36 +40,18 @@ Two interests of mine meet here:
   database into one page-addressed file, how InfluxDB's TSM blocks and Gorilla
   compression work, how a write-ahead log makes it crash-safe.
 
-So this is a small excuse to build those pieces. Most time-series databases are
-servers or multi-file directories (InfluxDB, Prometheus, VictoriaMetrics,
-QuestDB); `local-tsdb` is the opposite — one file, one binary, while still
-speaking the InfluxDB line protocol and a slice of InfluxQL. Not a new algorithm
-and not a competitor to the big systems. Good fit for local metrics collection,
-edge/IoT buffering, dev & test environments, desktop telemetry, and offline
-analysis.
+## Demo
 
-## Screenshots
-
-An interactive CPU-monitor dashboard built from **real data**
-([`python/examples/cpu_dashboard.py`](python/examples/cpu_dashboard.py)). The demo samples
-CPU load into `ltsdb` over `/write`, then serves a page whose **time-range
-buttons run real, time-filtered InfluxQL** — `SELECT * FROM cpu WHERE time >
-now() - 1m` — against `GET /query`, showing the statement, row count and latency
-on every click:
+A CPU-monitor dashboard built from **real data**
+([`python/examples/cpu_dashboard.py`](python/examples/cpu_dashboard.py)): load is written to
+`ltsdb` over `/write`, and the time-range buttons run real time-filtered InfluxQL
+against `GET /query`.
 
 ![CPU monitor dashboard](docs/images/cpu_dashboard.png)
 
-Pass `--backfill SECONDS` to write a backdated history in a single pass instead
-of sampling live — the engine accepts arbitrary past nanosecond timestamps, so
-historical (and out-of-order) data loads without waiting.
-
-The GPU-monitor demo sampling real GPU metrics into `ltsdb` and rendering a
-dashboard rebuilt from `/query` (real capture, with host paths and process
-names sanitised):
+The GPU-monitor demo and the Go CLI:
 
 ![GPU monitor dashboard](docs/images/gpu_monitor.png)
-
-The Go engine's CLI — ingest, query, benchmark:
 
 ![ltsdb CLI](docs/images/go_cli.png)
 

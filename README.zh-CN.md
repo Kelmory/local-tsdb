@@ -37,30 +37,17 @@ Gorilla 压缩、标签倒排索引，以及 InfluxQL 的一个子集——打�
 - **一直对存储引擎感兴趣**——SQLite 如何把库塞进一个分页单文件、InfluxDB 的 TSM block
   与 Gorilla 压缩怎么工作、预写日志如何保证崩溃安全。
 
-所以这算是个把这些部件做出来的小借口。多数时序库要么是服务端、要么是多文件目录
-（InfluxDB、Prometheus、VictoriaMetrics、QuestDB）；`local-tsdb` 恰恰相反——一个文件、
-一个二进制，同时仍然讲 InfluxDB 的 line protocol 和一部分 InfluxQL。不是新算法，也不跟
-大系统竞争。适合：本机指标采集、边缘/IoT 缓冲、开发测试环境、桌面遥测、离线分析。
+## Demo
 
-## 界面截图
-
-一个可交互的 CPU 监控看板，数据来自**真实采集**
-（[`python/examples/cpu_dashboard.py`](python/examples/cpu_dashboard.py)）。demo 先经 `/write`
-把 CPU 负载写入 `ltsdb`，随后托管一个页面：**时间范围按钮会发起真实的、带时间条件的
-InfluxQL 查询**——`SELECT * FROM cpu WHERE time > now() - 1m`——经 `GET /query`
-执行，并在每次点击后显示实际语句、返回行数与耗时：
+一个 CPU 监控看板，数据来自**真实采集**
+（[`python/examples/cpu_dashboard.py`](python/examples/cpu_dashboard.py)）：负载经 `/write`
+写入 `ltsdb`，时间范围按钮会发起真实的、带时间条件的 InfluxQL 查询。
 
 ![CPU 监控看板](docs/images/cpu_dashboard.png)
 
-加 `--backfill SECONDS` 可一次性写入一段回溯的历史时间戳，而不必等待实时采样——
-引擎接受任意（过去的）纳秒时间戳，因此历史数据、乃至乱序写入都能直接加载。
-
-GPU 监控 demo 把真实 GPU 指标写入 `ltsdb`，并根据 `/query` 结果重建看板
-（真实抓取，主机路径与进程名已脱敏）：
+GPU 监控 demo 与 Go CLI：
 
 ![GPU 监控看板](docs/images/gpu_monitor.png)
-
-Go 引擎的命令行——写入、查询、压测：
 
 ![ltsdb CLI](docs/images/go_cli.png)
 
