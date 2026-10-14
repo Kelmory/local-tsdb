@@ -8,6 +8,8 @@
 Gorilla 压缩、标签倒排索引，以及 InfluxQL 的一个子集——打包进**一个文件**和**一个静态二进制**，
 思路类似 SQLite。
 
+代码大部分由本地 Bonsai Qwen 模型编写并验证。
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │  HTTP API  /ping  /health  /write  /query     CLI: ltsdb      │
@@ -198,9 +200,7 @@ GPU 监控以控制台脚本形式安装：`local-tsdb-gpu --db gpu.ltdb`。
 
 可用 `ltsdb bench --db tmp.ltsdb` 复现（数字随机器不同而有差异）。
 
-## 借鉴来源与诚实定位
-
-本项目**不发明新算法**。它是一份干净实现，组合了公开且成熟的设计，且**大部分代码由本地 Bonsai Qwen 模型编写并验证**：
+## 借鉴来源
 
 - SQLite 的单文件页模型、freelist 与预写日志；
 - InfluxDB 的存储模型、TSM 式按时间边界裁剪的列式 block，以及

@@ -10,6 +10,8 @@ cluster — a page-oriented storage engine, a write-ahead log, Gorilla
 compression, an inverted tag index and an InfluxQL subset — into **one file**
 and **one static binary**, in the spirit of SQLite.
 
+Most of the code was written and verified with a local Bonsai Qwen model.
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │  HTTP API  /ping  /health  /write  /query     CLI: ltsdb      │
@@ -208,19 +210,12 @@ Workload: 100 000 points across 8 series, ingested via line protocol.
 
 Reproduce with `ltsdb bench --db tmp.ltsdb` (numbers vary by machine).
 
-## Prior art & honest positioning
-
-This project does **not** invent new algorithms. It is a clean-room
-implementation that combines well-known, published designs, and **most of the
-code was written and verified with a local Bonsai Qwen model**:
+## Prior art
 
 - SQLite's single-file page model, freelist and write-ahead log;
 - InfluxDB's storage model, TSM-style time-bounded columnar blocks and the
   Gorilla float-XOR / delta-of-delta codecs;
 - the InfluxDB line protocol and InfluxQL as the external interface.
-
-The value here is the *packaging* — a small, readable, single-file, embedded
-time-series engine that is wire-compatible with InfluxDB — not novel research.
 
 ## Limitations
 
