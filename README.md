@@ -40,21 +40,13 @@ Two interests of mine meet here:
   database into one page-addressed file, how InfluxDB's TSM blocks and Gorilla
   compression work, how a write-ahead log makes it crash-safe.
 
-So this is a small excuse to build those pieces. It is not a new algorithm and
-not a competitor to the big systems — just a single-file time-series database
-for the "I want to keep my run's metrics in a file" case.
-
-## Why
-
-Most time-series databases are servers or multi-file directories (InfluxDB's
-TSM, Prometheus blocks, VictoriaMetrics, QuestDB). `local-tsdb` is the
-opposite: an **embedded, embedded-friendly** engine where the whole database is
-a single file you can copy, ship or delete — while still speaking the
-InfluxDB line protocol and a slice of InfluxQL, so existing tooling and clients
-can talk to it unchanged.
-
-Good fit for: local metrics collection, edge/IoT buffering, dev & test
-environments, desktop telemetry, and offline analysis.
+So this is a small excuse to build those pieces. Most time-series databases are
+servers or multi-file directories (InfluxDB, Prometheus, VictoriaMetrics,
+QuestDB); `local-tsdb` is the opposite — one file, one binary, while still
+speaking the InfluxDB line protocol and a slice of InfluxQL. Not a new algorithm
+and not a competitor to the big systems. Good fit for local metrics collection,
+edge/IoT buffering, dev & test environments, desktop telemetry, and offline
+analysis.
 
 ## Screenshots
 
@@ -152,9 +144,6 @@ ltsdb bench   --db PATH [--points 100000] [--hosts 8]
 
 Exit codes: `0` success, `1` usage/syntax error, `2` runtime error.
 
-> The Go module path is `github.com/Kelmory/local-tsdb`, so the command can also
-> be installed with `go install github.com/Kelmory/local-tsdb/cmd/ltsdb@latest`.
-
 ### 2. Python reference engine
 
 ```sh
@@ -221,23 +210,19 @@ pip install local-tsdb          # once published to PyPI
 pip install "local-tsdb[gpu]"   # also pulls pynvml for the GPU monitor demo
 ```
 
-```python
-from tsdb import TimeSeriesDB, Point
-```
-
 The GPU monitor is installed as a console script: `local-tsdb-gpu --db gpu.ltdb`.
 
 ## Benchmarks
 
 Workload: 100 000 points across 8 series, ingested via line protocol.
 
-| Metric | Python reference | Go engine | Go target |
-|---|---:|---:|---:|
-| Write throughput | ~44k pts/s | **~549k pts/s** | ≥300k |
-| File size | 8.60 B/point | **9.26 B/point** | ≤10 |
-| Full scan (100k rows) | ~1.12 s | **0.060 s** | ≤100 ms |
-| Pruned range (8008 rows) | ~32 ms | **5.0 ms** | ≤5 ms |
-| `mean` over 100k points | ~0.99 s | **0.015 s** | ≤100 ms |
+| Metric | Python reference | Go engine |
+|---|---:|---:|
+| Write throughput | ~44k pts/s | **~549k pts/s** |
+| File size | 8.60 B/point | **9.26 B/point** |
+| Full scan (100k rows) | ~1.12 s | **0.060 s** |
+| Pruned range (8008 rows) | ~32 ms | **5.0 ms** |
+| `mean` over 100k points | ~0.99 s | **0.015 s** |
 
 Reproduce with `ltsdb bench --db tmp.ltsdb` (numbers vary by machine).
 
@@ -273,7 +258,7 @@ you need a single file you can drop on a disk, this is for you.
 - [ ] Block compaction / merging
 - [ ] Retention policies & rollups
 - [ ] Cross-platform GPU backend for the demo
-- [ ] Benchmarks and CI on Linux/macOS
+- [ ] CI and benchmarks on macOS / Windows
 - [ ] More of InfluxQL (regex, `GROUP BY` without aggregates)
 
 ## License

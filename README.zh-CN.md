@@ -37,17 +37,10 @@ Gorilla 压缩、标签倒排索引，以及 InfluxQL 的一个子集——打�
 - **一直对存储引擎感兴趣**——SQLite 如何把库塞进一个分页单文件、InfluxDB 的 TSM block
   与 Gorilla 压缩怎么工作、预写日志如何保证崩溃安全。
 
-所以这算是个把这些部件做出来的小借口。不是新算法，也不跟大系统竞争，
-就是一个单文件时序库，面向"想把这次运行的指标存成一个文件"的场景。
-
-## 为什么
-
-多数时序数据库要么是服务端，要么是多文件目录（InfluxDB 的 TSM、Prometheus 的 block、
-VictoriaMetrics、QuestDB）。`local-tsdb` 恰恰相反：一个**面向嵌入式**场景的引擎，
-整个数据库就是**一个文件**，可以随意复制、分发、删除——同时仍然讲 InfluxDB 的
-line protocol 和一部分 InfluxQL，现有工具与客户端无需改动即可对接。
-
-适合场景：本机指标采集、边缘/IoT 缓冲、开发与测试环境、桌面端遥测、离线分析。
+所以这算是个把这些部件做出来的小借口。多数时序库要么是服务端、要么是多文件目录
+（InfluxDB、Prometheus、VictoriaMetrics、QuestDB）；`local-tsdb` 恰恰相反——一个文件、
+一个二进制，同时仍然讲 InfluxDB 的 line protocol 和一部分 InfluxQL。不是新算法，也不跟
+大系统竞争。适合：本机指标采集、边缘/IoT 缓冲、开发测试环境、桌面遥测、离线分析。
 
 ## 界面截图
 
@@ -137,9 +130,6 @@ ltsdb bench   --db PATH [--points 100000] [--hosts 8]
 
 退出码：`0` 成功，`1` 用法/语法错误，`2` 运行时错误。
 
-> Go module 路径为 `github.com/Kelmory/local-tsdb`，因此也可用
-> `go install github.com/Kelmory/local-tsdb/cmd/ltsdb@latest` 安装命令。
-
 ### 2. Python 参考引擎
 
 ```sh
@@ -205,23 +195,19 @@ pip install local-tsdb          # 发布到 PyPI 之后
 pip install "local-tsdb[gpu]"   # 额外拉取 pynvml，用于 GPU 监控 demo
 ```
 
-```python
-from tsdb import TimeSeriesDB, Point
-```
-
 GPU 监控以控制台脚本形式安装：`local-tsdb-gpu --db gpu.ltdb`。
 
 ## 基准测试
 
 负载：8 个 series 共 100 000 个点，经 line protocol 写入。
 
-| 指标 | Python 参考实现 | Go 引擎 | Go 目标 |
-|---|---:|---:|---:|
-| 写入吞吐 | ~44k pts/s | **~549k pts/s** | ≥300k |
-| 文件大小 | 8.60 B/point | **9.26 B/point** | ≤10 |
-| 全表扫描（10 万行） | ~1.12 s | **0.060 s** | ≤100 ms |
-| 裁剪查询（8008 行） | ~32 ms | **5.0 ms** | ≤5 ms |
-| 10 万点的 `mean` | ~0.99 s | **0.015 s** | ≤100 ms |
+| 指标 | Python 参考实现 | Go 引擎 |
+|---|---:|---:|
+| 写入吞吐 | ~44k pts/s | **~549k pts/s** |
+| 文件大小 | 8.60 B/point | **9.26 B/point** |
+| 全表扫描（10 万行） | ~1.12 s | **0.060 s** |
+| 裁剪查询（8008 行） | ~32 ms | **5.0 ms** |
+| 10 万点的 `mean` | ~0.99 s | **0.015 s** |
 
 可用 `ltsdb bench --db tmp.ltsdb` 复现（数字随机器不同而有差异）。
 
@@ -252,7 +238,7 @@ TimescaleDB；如果你需要一个能随手丢在磁盘上的单文件，这个
 - [ ] block compaction / 合并
 - [ ] 保留策略与 rollup
 - [ ] demo 的跨平台 GPU 后端
-- [ ] Linux/macOS 上的基准与 CI
+- [ ] macOS / Windows 上的 CI 与基准测试
 - [ ] 更完整的 InfluxQL（正则、无聚合的 `GROUP BY`）
 
 ## 许可证
