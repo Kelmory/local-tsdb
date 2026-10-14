@@ -1,12 +1,12 @@
 """Render captured terminal text to a PNG 'screenshot' for the README.
 
 This is a docs helper only -- it is not part of the database engine. It turns
-the real stdout captured from the demo programs (see ``docs/demo/*.txt``) into
-an image that looks like a terminal window, so the README can show genuine
+the real stdout captured from the demo programs (see ``docs/captures/*.txt``)
+into an image that looks like a terminal window, so the README can show genuine
 program output without shipping a binary screenshot.
 
 Usage:
-    python docs/render_terminal.py docs/demo/gpu_monitor.txt \
+    python docs/render_terminal.py docs/captures/gpu_monitor.txt \
         docs/images/gpu_monitor.png "ltsdb - GPU Monitor"
 """
 from __future__ import annotations

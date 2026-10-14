@@ -31,28 +31,18 @@ and **one static binary**, in the spirit of SQLite.
 
 ## Motivation
 
-Two things came together to start this project.
+Two interests of mine meet here:
 
-The first is that **AI/ML workloads are time-series workloads**. Every training
-run, inference server and evaluation sweep emits streams of measurements — loss
-per step, learning rate, tokens/s, GPU utilisation, memory, temperature, power,
-latency percentiles, queue depth. Today these usually go to a full
-InfluxDB/Prometheus deployment even when you just want them sitting next to the
-run on the same box. That is a lot of moving parts for "append numbers, read
-them back later". This project asks the opposite question: what if the whole
-time-series store were *one file and one binary*, so a script can drop it
-beside its output and forget about it?
+- **AI/ML workloads are time-series workloads.** Every training run or inference
+  server emits loss, tokens/s, GPU utilisation, memory, power and latency. Often
+  you just want them in a file next to the run, not a whole metrics deployment.
+- **Storage engines have always been interesting to me** — how SQLite packs a
+  database into one page-addressed file, how InfluxDB's TSM blocks and Gorilla
+  compression work, how a write-ahead log makes it crash-safe.
 
-The second is a **long-standing personal interest in storage engines**: how
-SQLite packs a database into a single page-addressed file, how InfluxDB's TSM
-blocks and Gorilla compression squeeze a gauge down to a few bits per point,
-how a write-ahead log makes all of it crash-safe. This repo was a reason to
-build those pieces for real and keep the result small enough to read in an
-afternoon.
-
-So — not a new algorithm, not a competitor to the big systems, but a small,
-honest, single-file time-series database aimed at the "I just want to keep my
-run's metrics in a file" case.
+So this is a small excuse to build those pieces. It is not a new algorithm and
+not a competitor to the big systems — just a single-file time-series database
+for the "I want to keep my run's metrics in a file" case.
 
 ## Why
 
@@ -69,7 +59,7 @@ environments, desktop telemetry, and offline analysis.
 ## Screenshots
 
 An interactive CPU-monitor dashboard built from **real data**
-([`docs/demo/cpu_dashboard.py`](docs/demo/cpu_dashboard.py)). The demo samples
+([`python/examples/cpu_dashboard.py`](python/examples/cpu_dashboard.py)). The demo samples
 CPU load into `ltsdb` over `/write`, then serves a page whose **time-range
 buttons run real, time-filtered InfluxQL** — `SELECT * FROM cpu WHERE time >
 now() - 1m` — against `GET /query`, showing the statement, row count and latency
@@ -96,8 +86,9 @@ The Go engine's CLI — ingest, query, benchmark:
 | Path | Language | Role |
 |---|---|---|
 | [`cmd/`](cmd), [`internal/`](internal), [`ltsdb.go`](ltsdb.go) | Go 1.21, stdlib only | **Production engine** — the `ltsdb` binary: engine, InfluxQL, HTTP API, CLI (this is the Go module root, so `go get` works) |
-| [`tsdb/`](tsdb) | Python 3, stdlib only | **Reference implementation** — same architecture, easy to read and audit |
-| [`gpu_monitor/`](gpu_monitor) | Python + `pynvml` | **Real-world demo** — samples GPUs → `/write` → live ANSI dashboard |
+| [`python/tsdb/`](python/tsdb) | Python 3, stdlib only | **Reference implementation** — same architecture, easy to read and audit |
+| [`python/gpu_monitor/`](python/gpu_monitor) | Python + `pynvml` | **Real-world demo** — samples GPUs → `/write` → live ANSI dashboard |
+| [`python/examples/`](python/examples) | Python 3 | Runnable demos: the engine walkthrough and the CPU dashboard |
 | [`DESIGN.md`](DESIGN.md) | — | Architecture & on-disk format notes (reference engine) |
 | [`docs/`](docs) | — | README screenshots and the terminal-render helper |
 
@@ -167,8 +158,8 @@ Exit codes: `0` success, `1` usage/syntax error, `2` runtime error.
 ### 2. Python reference engine
 
 ```sh
-python demo/demo.py                     # end-to-end: API + line protocol + InfluxQL + HTTP
-python -m pytest tests -q               # 139 tests
+python python/examples/demo.py          # end-to-end: API + line protocol + InfluxQL + HTTP
+cd python && python -m pytest -q        # 139 tests
 ```
 
 ```python
@@ -189,8 +180,8 @@ temperature / power plus per-process GPU memory into the database, then renders
 a live ANSI dashboard rebuilt from `/query`:
 
 ```sh
-pip install -r requirements.txt
-python -m gpu_monitor --db gpu.ltdb --interval 1
+pip install -r python/requirements.txt
+cd python && python -m gpu_monitor --db ../gpu.ltdb --interval 1
 ```
 
 Per-process GPU memory on Windows (WDDM) is read from a persistent PowerShell
@@ -225,7 +216,7 @@ rs, _ := ltsdb.Exec(db, "SELECT mean(usage) FROM cpu")   // InfluxQL -> ResultSe
 ### Python package
 
 ```sh
-pip install .                   # from a clone
+pip install ./python            # from a clone
 pip install local-tsdb          # once published to PyPI
 pip install "local-tsdb[gpu]"   # also pulls pynvml for the GPU monitor demo
 ```
@@ -253,8 +244,8 @@ Reproduce with `ltsdb bench --db tmp.ltsdb` (numbers vary by machine).
 ## Prior art & honest positioning
 
 This project does **not** invent new algorithms. It is a clean-room
-implementation that combines well-known, published designs, and it is
-**largely AI-assisted code**:
+implementation that combines well-known, published designs, and **most of the
+code was written and verified with a local Bonsai Qwen model**:
 
 - SQLite's single-file page model, freelist and write-ahead log;
 - InfluxDB's storage model, TSM-style time-bounded columnar blocks and the

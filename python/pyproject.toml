@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "local-tsdb"
 version = "1.0.0"
 description = "A single-file, zero-dependency time-series database with an InfluxDB-compatible API"
-readme = "README.md"
+readme = { text = "A single-file, zero-dependency time-series database with an InfluxDB-compatible API. See the repository README for the full documentation and benchmarks.", content-type = "text/markdown" }
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "Kelmory" }]
@@ -35,3 +35,7 @@ Issues = "https://github.com/Kelmory/local-tsdb/issues"
 
 [tool.setuptools]
 packages = ["tsdb", "gpu_monitor"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -24,7 +24,7 @@ import tempfile
 import urllib.parse
 import urllib.request
 
-# Allow running as ``python demo/demo.py`` from the project root.
+# Allow running as ``python python/examples/demo.py`` from the repo root.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from tsdb import Point, TimeSeriesDB, TSDBHTTPServer

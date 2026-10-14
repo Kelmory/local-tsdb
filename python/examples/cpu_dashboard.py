@@ -14,8 +14,8 @@ binary end to end, the same way ``gpu_monitor`` does:
 Windows-only: CPU load comes from WMI (``Win32_Processor.LoadPercentage``).
 
 Usage:
-    python docs/demo/cpu_dashboard.py                 # live sample, then serve
-    python docs/demo/cpu_dashboard.py --backfill 900  # 15 min of history, then serve
+    python python/examples/cpu_dashboard.py                 # live sample, then serve
+    python python/examples/cpu_dashboard.py --backfill 900  # 15 min of history, then serve
 
 Open the printed URL, or screenshot it with a headless browser.
 """
@@ -330,7 +330,7 @@ def main(argv=None) -> None:
     if not os.path.exists(EXE):
         sys.exit("build the engine first: go build -o ltsdb.exe ./cmd/ltsdb")
 
-    db = os.path.join(ROOT, "docs", "demo", "cpu_demo.ltsdb")
+    db = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cpu_demo.ltsdb")
     for suffix in ("", ".wal"):
         if os.path.exists(db + suffix):
             os.remove(db + suffix)

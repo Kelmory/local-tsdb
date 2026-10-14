@@ -29,21 +29,16 @@ Gorilla 压缩、标签倒排索引，以及 InfluxQL 的一个子集——打�
 
 ## 初衷
 
-做这个项目，源于两件事的交汇。
+两个我一直感兴趣的方向在这里碰上了：
 
-其一，是**AI/ML workload 本质就是时序 workload**。每一次训练、每一个推理服务、每一轮评测，
-都会持续产出大量测量值——每步 loss、学习率、tokens/s、GPU 利用率、显存、温度、功耗、
-延迟分位数、队列深度。如今这些数据哪怕只是想留在本机训练脚本旁边，也常常要先拉起一整套
-InfluxDB/Prometheus。为了"追加数字、之后再读回来"这点事，链路实在太重了。于是反过来问一句：
-如果整个时序存储就是**一个文件 + 一个二进制**，脚本可以直接把它丢在输出目录旁边然后不管了呢？
+- **AI/ML workload 本身就是时序 workload。** 每次训练或推理都会产出 loss、tokens/s、
+  GPU 利用率、显存、功耗、延迟这些指标。很多时候只想把它们存成运行目录旁边的文件，
+  而不是拉一整套指标服务。
+- **一直对存储引擎感兴趣**——SQLite 如何把库塞进一个分页单文件、InfluxDB 的 TSM block
+  与 Gorilla 压缩怎么工作、预写日志如何保证崩溃安全。
 
-其二，是**我个人对存储引擎由来已久的爱好**：SQLite 如何把数据库塞进一个按页寻址的单文件、
-InfluxDB 的 TSM block 与 Gorilla 压缩如何把一个 gauge 压到每点几个比特、预写日志又如何让这
-一切在崩溃后依然安全。这个仓库给了我一个理由，把这些部件真正实现出来，并让最终结果小到
-一个下午就能读完。
-
-所以：这不是什么新算法，也不是要和大系统竞争，而是一个小而诚实的单文件时序库，
-面向"I just want to keep my run's metrics in a file"这个场景。
+所以这算是个把这些部件做出来的小借口。不是新算法，也不跟大系统竞争，
+就是一个单文件时序库，面向"想把这次运行的指标存成一个文件"的场景。
 
 ## 为什么
 
@@ -57,7 +52,7 @@ line protocol 和一部分 InfluxQL，现有工具与客户端无需改动即可
 ## 界面截图
 
 一个可交互的 CPU 监控看板，数据来自**真实采集**
-（[`docs/demo/cpu_dashboard.py`](docs/demo/cpu_dashboard.py)）。demo 先经 `/write`
+（[`python/examples/cpu_dashboard.py`](python/examples/cpu_dashboard.py)）。demo 先经 `/write`
 把 CPU 负载写入 `ltsdb`，随后托管一个页面：**时间范围按钮会发起真实的、带时间条件的
 InfluxQL 查询**——`SELECT * FROM cpu WHERE time > now() - 1m`——经 `GET /query`
 执行，并在每次点击后显示实际语句、返回行数与耗时：
@@ -81,8 +76,9 @@ Go 引擎的命令行——写入、查询、压测：
 | 路径 | 语言 | 作用 |
 |---|---|---|
 | [`cmd/`](cmd)、[`internal/`](internal)、[`ltsdb.go`](ltsdb.go) | Go 1.21，仅标准库 | **生产引擎** —— `ltsdb` 二进制：引擎、InfluxQL、HTTP API、CLI（这里是 Go 模块根，故 `go get` 可用） |
-| [`tsdb/`](tsdb) | Python 3，仅标准库 | **参考实现** —— 同样的架构，便于阅读与审计 |
-| [`gpu_monitor/`](gpu_monitor) | Python + `pynvml` | **真实场景 demo** —— 采集 GPU → `/write` → 实时 ANSI 看板 |
+| [`python/tsdb/`](python/tsdb) | Python 3，仅标准库 | **参考实现** —— 同样的架构，便于阅读与审计 |
+| [`python/gpu_monitor/`](python/gpu_monitor) | Python + `pynvml` | **真实场景 demo** —— 采集 GPU → `/write` → 实时 ANSI 看板 |
+| [`python/examples/`](python/examples) | Python 3 | 可运行示例：引擎端到端演示与 CPU 看板 |
 | [`DESIGN.md`](DESIGN.md) | — | 架构与磁盘格式说明（参考实现） |
 | [`docs/`](docs) | — | README 截图与终端渲染脚本 |
 
@@ -147,8 +143,8 @@ ltsdb bench   --db PATH [--points 100000] [--hosts 8]
 ### 2. Python 参考引擎
 
 ```sh
-python demo/demo.py                     # 端到端：API + line protocol + InfluxQL + HTTP
-python -m pytest tests -q               # 139 个测试
+python python/examples/demo.py          # 端到端：API + line protocol + InfluxQL + HTTP
+cd python && python -m pytest -q        # 139 个测试
 ```
 
 ```python
@@ -168,8 +164,8 @@ with TimeSeriesDB("cpu.ltdb") as db:
 再根据 `/query` 结果渲染一个实时 ANSI 看板：
 
 ```sh
-pip install -r requirements.txt
-python -m gpu_monitor --db gpu.ltdb --interval 1
+pip install -r python/requirements.txt
+cd python && python -m gpu_monitor --db ../gpu.ltdb --interval 1
 ```
 
 Windows（WDDM）下逐进程显存来自一个常驻的 PowerShell `Get-Counter` 子进程，
@@ -204,7 +200,7 @@ rs, _ := ltsdb.Exec(db, "SELECT mean(usage) FROM cpu")   // InfluxQL -> ResultSe
 ### Python 包
 
 ```sh
-pip install .                   # 从克隆的仓库安装
+pip install ./python            # 从克隆的仓库安装
 pip install local-tsdb          # 发布到 PyPI 之后
 pip install "local-tsdb[gpu]"   # 额外拉取 pynvml，用于 GPU 监控 demo
 ```
@@ -231,7 +227,7 @@ GPU 监控以控制台脚本形式安装：`local-tsdb-gpu --db gpu.ltdb`。
 
 ## 借鉴来源与诚实定位
 
-本项目**不发明新算法**。它是一份干净实现，组合了公开且成熟的设计，且**代码主要由 AI 辅助完成**：
+本项目**不发明新算法**。它是一份干净实现，组合了公开且成熟的设计，且**大部分代码由本地 Bonsai Qwen 模型编写并验证**：
 
 - SQLite 的单文件页模型、freelist 与预写日志；
 - InfluxDB 的存储模型、TSM 式按时间边界裁剪的列式 block，以及

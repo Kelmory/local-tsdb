@@ -15,7 +15,7 @@
 代码布局：
 
 ```
-tsdb/            # 数据库包
+python/tsdb/      # 数据库包
   model.py       # Point / series key / 字段类型
   compression.py# Gorilla 编解码（float XOR、int delta-of-delta）
   block.py       # DataBlock 列式块序列化
@@ -26,8 +26,8 @@ tsdb/            # 数据库包
   sql.py         # InfluxQL 子集（tokenizer + 递归下降）+ ResultSet
   http_server.py # HTTP API（http.server，单锁守护）
   core.py        # TimeSeriesDB 门面
-demo/demo.py     # 端到端演示
-tests/           # 121 个测试（单元 + 集成 + 性能）
+python/examples/demo.py  # 端到端演示
+python/tests/    # 121 个测试（单元 + 集成 + 性能）
 ```
 
 ## 2. 总体架构
@@ -179,7 +179,7 @@ SHOW MEASUREMENTS
 
 ## 7. 测试结果
 
-### 7.1 单元 / 集成测试（`python -m unittest discover -s tests`）
+### 7.1 单元 / 集成测试（`cd python && python -m pytest -q`）
 
 **Ran 121 tests — OK**（约 5.7s；含 `-W error::ResourceWarning` 无资源泄漏）。
 
@@ -197,7 +197,7 @@ SHOW MEASUREMENTS
 | test_http_server | 8 | /ping 204、/health、write→query 闭环、precision=s、CSV/JSON 双格式、400/404 |
 | **合计** | **121** | |
 
-### 7.2 性能测试（tests/test_perf.py，100k 点 × 8 series）
+### 7.2 性能测试（python/tests/test_perf.py，100k 点 × 8 series）
 
 数据：`cpu,host=h<i> usage=(j%100)/100 @ BASE+j`，i∈[0,8)、j∈[0,12500)，经 line protocol `write_lines` + `commit`。
 
@@ -209,7 +209,7 @@ SHOW MEASUREMENTS
 | 窄范围裁剪（8% 时间跨度，[6000,7000]） | **~0.032s**，返回行数精确 = 8×1001 = 8008（断言） |
 | 全量 mean 聚合 | ~0.99s，结果 0.495（places=6 精确断言） |
 
-### 7.3 Demo（`python demo/demo.py`，EXIT=0）
+### 7.3 Demo（`python python/examples/demo.py`，EXIT=0）
 
 四段端到端：① API `Point` + line protocol 写 cpu/mem/load 共 30 点 → commit（文件 24,576 B）；② `select`/`aggregate` 读回（mean usage = 0.200）；③ InfluxQL：`SELECT * ... LIMIT 3` CSV、`GROUP BY time(100)` 桶均值、`SHOW MEASUREMENTS → ['cpu','load','mem']`；④ 真实 socket 上 `GET /ping→204`、`POST /write→204`（net/iface=eth0）、`GET /query` JSON → `columns=['count'], rows=[{'count':1}]`。
 

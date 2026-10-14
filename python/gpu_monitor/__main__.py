@@ -26,9 +26,10 @@ import urllib.request
 
 # Allow running both as ``python -m gpu_monitor`` and as a script file.
 _PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
-_PROJECT_ROOT = os.path.dirname(_PACKAGE_DIR)
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
+_PY_ROOT = os.path.dirname(_PACKAGE_DIR)      # python/
+_REPO_ROOT = os.path.dirname(_PY_ROOT)        # repository root (holds ltsdb.exe)
+if _PY_ROOT not in sys.path:
+    sys.path.insert(0, _PY_ROOT)
 
 from gpu_monitor.collector import GPUSampler  # noqa: E402
 from gpu_monitor.view import LiveView  # noqa: E402
@@ -49,7 +50,7 @@ def ensure_server(addr: str, db_path: str, exe: str):
     if not os.path.exists(exe):
         sys.exit("server binary not found: {}\n"
                  "build it first:  cd {} && go build -o ltsdb.exe ./cmd/ltsdb\n"
-                 "or point --exe at an existing build".format(exe, _PROJECT_ROOT))
+                 "or point --exe at an existing build".format(exe, _REPO_ROOT))
     proc = subprocess.Popen(
         [exe, "serve", "--db", db_path, "--addr", addr],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -91,7 +92,7 @@ def main(argv=None) -> None:
     parser.add_argument("--history", type=int, default=60,
                         help="samples kept for sparklines (default: 60)")
     parser.add_argument("--exe",
-                        default=os.path.join(_PROJECT_ROOT, "ltsdb.exe"),
+                        default=os.path.join(_REPO_ROOT, "ltsdb.exe"),
                         help="path to the ltsdb server binary")
     parser.add_argument("--keep-server", action="store_true",
                         help="leave the spawned server running on exit")
