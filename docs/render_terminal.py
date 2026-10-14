@@ -25,6 +25,15 @@ DIM = (139, 148, 158)
 PROMPT = (126, 231, 135)
 ACCENT = (121, 192, 255)
 
+# Block-element glyphs are drawn as rectangles instead of glyphs: many monospace
+# fonts map them to indistinguishable (or missing) shapes, which would flatten
+# the bars and sparklines these dashboards are made of.
+BLOCK_FRAC = {"▁": 0.125, "▂": 0.25, "▃": 0.375, "▄": 0.5,
+              "▅": 0.625, "▆": 0.75, "▇": 0.875, "█": 1.0}
+SHADE = {"░": True, "▒": True, "▓": True}
+FILL = (230, 237, 243)
+SHADE_FILL = (60, 68, 77)
+
 FONT_CANDIDATES = [
     r"C:\Windows\Fonts\consola.ttf",
     r"C:\Windows\Fonts\cour.ttf",
@@ -77,7 +86,26 @@ def main() -> None:
             colour = PROMPT
         elif line.startswith(" GPU Monitor") or line.lstrip().startswith("GPU0"):
             colour = ACCENT
-        draw.text((pad, y), line, font=font, fill=colour)
+
+        run, run_start = "", 0
+        for i, ch in enumerate(line):
+            if ch in BLOCK_FRAC or ch in SHADE:
+                if run:
+                    draw.text((pad + run_start * char_w, y), run, font=font, fill=colour)
+                    run = ""
+                x = pad + i * char_w
+                if ch in BLOCK_FRAC:
+                    top = y + line_h * (1 - BLOCK_FRAC[ch])
+                    draw.rectangle([x, top, x + char_w - 0.5, y + line_h - 1], fill=FILL)
+                else:
+                    draw.rectangle([x, y, x + char_w - 0.5, y + line_h - 1],
+                                   fill=SHADE_FILL)
+            else:
+                if not run:
+                    run_start = i
+                run += ch
+        if run:
+            draw.text((pad + run_start * char_w, y), run, font=font, fill=colour)
         y += line_h
 
     img.save(out_path)

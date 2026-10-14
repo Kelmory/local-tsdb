@@ -1,5 +1,7 @@
 # local-tsdb
 
+**English** · [简体中文](README.zh-CN.md)
+
 A **single-file, zero-dependency time-series database** with an
 **InfluxDB-compatible** write and query surface.
 
@@ -27,6 +29,31 @@ and **one static binary**, in the spirit of SQLite.
 
 ---
 
+## Motivation
+
+Two things came together to start this project.
+
+The first is that **AI/ML workloads are time-series workloads**. Every training
+run, inference server and evaluation sweep emits streams of measurements — loss
+per step, learning rate, tokens/s, GPU utilisation, memory, temperature, power,
+latency percentiles, queue depth. Today these usually go to a full
+InfluxDB/Prometheus deployment even when you just want them sitting next to the
+run on the same box. That is a lot of moving parts for "append numbers, read
+them back later". This project asks the opposite question: what if the whole
+time-series store were *one file and one binary*, so a script can drop it
+beside its output and forget about it?
+
+The second is a **long-standing personal interest in storage engines**: how
+SQLite packs a database into a single page-addressed file, how InfluxDB's TSM
+blocks and Gorilla compression squeeze a gauge down to a few bits per point,
+how a write-ahead log makes all of it crash-safe. This repo was a reason to
+build those pieces for real and keep the result small enough to read in an
+afternoon.
+
+So — not a new algorithm, not a competitor to the big systems, but a small,
+honest, single-file time-series database aimed at the "I just want to keep my
+run's metrics in a file" case.
+
 ## Why
 
 Most time-series databases are servers or multi-file directories (InfluxDB's
@@ -40,6 +67,13 @@ Good fit for: local metrics collection, edge/IoT buffering, dev & test
 environments, desktop telemetry, and offline analysis.
 
 ## Screenshots
+
+A CPU-monitor dashboard built from **real data**: a temporary demo
+([`docs/demo/cpu_dashboard.py`](docs/demo/cpu_dashboard.py)) samples CPU load,
+stores it in `ltsdb` over `/write`, reads it back over `/query`, and renders
+this page:
+
+![CPU monitor dashboard](docs/images/cpu_dashboard.png)
 
 The GPU-monitor demo sampling real GPU metrics into `ltsdb` and rendering a
 dashboard rebuilt from `/query` (real capture, with host paths and process
